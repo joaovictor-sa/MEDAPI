@@ -1,4 +1,3 @@
-[Uploading README.md…]()
 # 🏥 MEDAPI — API de Agendamento Médico
 
 ![Python Version](https://img.shields.io/badge/python-3.14-blue?style=for-the-badge&logo=python&logoColor=white)
