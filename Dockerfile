@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "entrypoint.sh"]
+CMD ["sh", "-x", "entrypoint.sh"]
