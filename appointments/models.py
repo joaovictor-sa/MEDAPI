@@ -16,6 +16,8 @@ class Appointment(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    cancellation_reason = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
