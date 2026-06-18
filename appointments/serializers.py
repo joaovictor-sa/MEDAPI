@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework import serializers
 from .models import Appointment
 from availability.models import DoctorAvailability
@@ -14,26 +15,34 @@ VALID_TRANSITIONS = {
 class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ['id', 'doctor', 'patient', 'date', 'start_time', 'end_time', 'status', 'created_at']
-        read_only_fields = ['end_time', 'created_at']
+        fields = ['id', 'doctor', 'patient', 'date', 'start_time', 'end_time', 'status', 'notes', 'cancellation_reason', 'created_at', 'updated_at']
+        read_only_fields = ['end_time', 'created_at', 'updated_at']
 
     def validate_status(self, value):
         if self.instance:
             current_status = self.instance.status
+
+            if value == current_status:
+                return value
+            
             allowed = VALID_TRANSITIONS.get(current_status, [])
             if value not in allowed:
                 raise serializers.ValidationError(
                     f"Transição inválida: '{current_status}' → '{value}'."
                 )
-
+            
             if value == 'canceled':
-                appointment_dt = datetime.combine(self.instance.date, self.instance.start_time)
-                if appointment_dt - datetime.now() < timedelta(hours=24):
+                now = timezone.now()
+                appointment_dt = timezone.make_aware(datetime.combine(self.instance.date, self.instance.start_time))
+                if appointment_dt - now < timedelta(hours=24):
                     raise serializers.ValidationError('A consulta só pode ser cancelada com no mínimo 24H de antecedência.')
 
         return value
 
     def validate(self, data):
+        if self.instance and data.get ('status') == 'canceled':
+            if not data.get('cancellation_reason'):
+                raise serializers.ValidationError({'cancellation_reason': 'Obrigatório o motivo do cancelamento'})
         if self.instance:
             return data
 
@@ -69,3 +78,4 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
         data['end_time'] = end_time
         return data
+
