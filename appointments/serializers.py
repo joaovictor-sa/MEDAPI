@@ -24,25 +24,30 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
             if value == current_status:
                 return value
-            
+
             allowed = VALID_TRANSITIONS.get(current_status, [])
             if value not in allowed:
                 raise serializers.ValidationError(
                     f"Transição inválida: '{current_status}' → '{value}'."
                 )
-            
+
             if value == 'canceled':
                 now = timezone.now()
                 appointment_dt = timezone.make_aware(datetime.combine(self.instance.date, self.instance.start_time))
+
+                if timezone.is_naive(appointment_dt):
+                    appointment_dt = timezone.make_aware(appointment_dt)
+
                 if appointment_dt - now < timedelta(hours=24):
                     raise serializers.ValidationError('A consulta só pode ser cancelada com no mínimo 24H de antecedência.')
 
         return value
 
     def validate(self, data):
-        if self.instance and data.get ('status') == 'canceled':
+        if self.instance and data.get('status') == 'canceled':
             if not data.get('cancellation_reason'):
                 raise serializers.ValidationError({'cancellation_reason': 'Obrigatório o motivo do cancelamento'})
+
         if self.instance:
             return data
 
@@ -78,4 +83,3 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
         data['end_time'] = end_time
         return data
-
