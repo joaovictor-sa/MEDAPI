@@ -1,6 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from authentication.permissions import IsPatientOrAdmin
 from .models import Appointment
 from . import serializers
 from authentication.permissions import IsAdmin, IsPatient
@@ -10,10 +11,8 @@ class AppointmentLisCreateAPIView(generics.ListCreateAPIView):
     serializer_class = serializers.AppointmentSerializer
 
     def get_permissions(self):
-        if self.request.method == 'POST':
-            return [IsPatient()]
-        return [IsAuthenticated()]
-
+        return [IsPatientOrAdmin()]
+    
     def get_queryset(self):
         user = self.request.user
         if getattr(user, 'role', None) == 'admin':

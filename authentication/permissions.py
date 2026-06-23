@@ -29,3 +29,9 @@ class IsPatient(BasePermission):
             user.is_authenticated and
             getattr(user, 'role', None) == 'patient'
         )
+
+
+class IsPatientOrAdmin(BasePermission):
+        def has_permission(self, request, view):
+            return (request.user.is_authenticated and (request.user.role == 'patient' or request.user.role == 'admin'))
+
