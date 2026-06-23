@@ -19,6 +19,8 @@ class DoctorAvailability(models.Model):
     end_time = models.TimeField()
     slot_duration = models.PositiveIntegerField(help_text='Slot duration in minutes')
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('doctor', 'weekday', 'start_time')
